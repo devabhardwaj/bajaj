@@ -1,0 +1,71 @@
+from flask import Flask, request, jsonify
+from flask_cors import CORS
+import json
+import os
+
+app = Flask(_name_)
+CORS(app)
+
+# Logic for identifying the highest lowercase alphabet
+def get_highest_lowercase_alphabet(text):
+    lowercase_chars = [char for char in text if char.islower()]
+    if lowercase_chars:
+        return max(lowercase_chars)
+    else:
+        return None
+
+# Logic for processing the file
+def process_file(file):
+    if file:
+        file_extension = file.filename.split('.')[-1]
+        valid_file_extensions = ['pdf', 'docx', 'jpg', 'jpeg', 'png']
+        if file_extension in valid_file_extensions:
+            file_data = file.read()
+            file_size_kb = len(file_data) / 1024
+            mime_type = file.mimetype
+            return True, mime_type, file_size_kb
+        else:
+            return False, None, None
+    else:
+        return False, None, None
+
+# POST endpoint
+@app.route('/bfhl', methods=['POST'])
+def process_request():
+    data = request.get_json()
+
+    user_id = data['user_id']
+    college_email_id = data['college_email_id']
+    college_roll_number = data['college_roll_number']
+    numbers = data['numbers']
+    alphabets = data['alphabets']
+    file = request.files.get('file')
+
+    highest_lowercase_alphabet = get_highest_lowercase_alphabet(''.join(alphabets))
+    file_valid, mime_type, file_size_kb = process_file(file)
+
+    response = {
+        'status': 'success',
+        'user_id': user_id,
+        'college_email_id': college_email_id,
+        'college_roll_number': college_roll_number,
+        'numbers': numbers,
+        'alphabets': alphabets,
+        'highest_lowercase_alphabet': highest_lowercase_alphabet,
+        'file': {
+            'valid': file_valid,
+            'mime_type': mime_type,
+            'size_kb': file_size_kb
+        }
+    }
+
+    return jsonify(response)
+
+# GET endpoint
+@app.route('/bfhl', methods=['GET'])
+def get_operation_code():
+    operation_code = '12345'
+    return jsonify({'operation_code': operation_code})
+
+if _name_ == '_main_':
+    app.run(debug=True)
